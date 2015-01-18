@@ -1,0 +1,46 @@
+package ait.gui;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+/**
+ * Document this file!
+ * Creation date: 30/12/14
+ *
+ * @author MD
+ */
+public class AnswerItWindow extends JFrame implements ActionListener {
+    private JButton callButton;
+    private boolean isLocal = false;
+    private UIListener listener;
+
+    public AnswerItWindow(UIListener aListener, boolean isLocal) {
+        this.listener = aListener;
+        this.isLocal = isLocal;
+        super.setSize(300, 100);
+        super.setLocationRelativeTo(null);
+        String title = "Anklingeln";
+        if (this.isLocal) title += " - LOCAL VERSION";
+        super.setTitle(title);
+        super.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        addLayout();
+    }
+
+    private void addLayout() {
+        this.callButton = new JButton("Eltern anrufen");
+        this.callButton.setSize(150, 50);
+        this.callButton.addActionListener(this);
+
+        GridLayout layout = new GridLayout();
+        super.setLayout(layout);
+        super.add(this.callButton);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+//        System.out.println(e.toString());
+        this.listener.callTriggered();
+    }
+}

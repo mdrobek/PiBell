@@ -1,0 +1,15 @@
+# general stuff
+bin/*
+tags
+build/deploy/README-PI.txt
+
+# vim stuff
+**/*.swp
+
+# IntelliJ stuff 
+.idea/*
+*.iml
+
+# Java stuff
+out/*
+ship/*
