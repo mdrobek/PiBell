@@ -29,7 +29,6 @@
 *.hex
 
 # general stuff
-bin/*
 tags
 build/deploy/README-PI.txt
 

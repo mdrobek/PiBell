@@ -9,7 +9,7 @@ SET(PLATTFORM "")
 # call cmake for different plattform build as follows:
 #    cmake -DTARGET=arm|x86 CMakeLists.txt
 # By default, always the last set entry is chosen
-message(STATUS "This is the target variable: ${TARGET}")
+#message(STATUS "This is the target variable: ${TARGET}")
 if("${TARGET}" STREQUAL ${ARM})
     SET(IS_ARM true)
     SET(PLATTFORM ${ARM})
@@ -34,8 +34,11 @@ set(PiBell_SOURCE_DIR ${PiBell_DIR}/src)
 set(PiBell_BINARY_DIR ${PiBell_DIR}/bin)
 
 set(EXECUTABLE_OUTPUT_PATH ${PiBell_BINARY_DIR})
+set(OUTPUT_NAME ${CMAKE_PROJECT_NAME}-${PLATTFORM})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PiBell_DIR}/build/cmake)
 set(CMAKE_VERBOSE_MAKEFILE true)
+
+message(STATUS "This is the binary file name: ${OUTPUT_NAME}")
 
 # Define compiler flags
 SET(GCC_VALGRIND_COMPILE_FLAGS "-g -O0")
@@ -80,7 +83,7 @@ set(SOURCE_FILES ${PiBell_SOURCE_DIR}/main.c
     ${PiBell_SOURCE_DIR}/ctrler.c
     ${PiBell_SOURCE_DIR}/rest.c
     ${PiBell_SOURCE_DIR}/cJSON.c)
-add_executable(PiBell ${SOURCE_FILES})
-target_link_libraries(PiBell ${LIBCURL_LIBRARY})
+add_executable(${OUTPUT_NAME} ${SOURCE_FILES})
+target_link_libraries(${OUTPUT_NAME} ${LIBCURL_LIBRARY})
 # Link in math library for cJSON
-target_link_libraries(PiBell m)
+target_link_libraries(${OUTPUT_NAME} m)
