@@ -1,39 +1,46 @@
 # PiBell-Pi
-PiBell-Pi is a small C program that runs on the Raspberry Pi (or every other ARM microcontroller that runs a linux) and plays a ringtone on the speaker attached to the Pi whenever it receives a 'Ring'-request. 
+PiBell-Pi is a small C program that runs on the Raspberry Pi (or every other ARM microcontroller that runs a linux) and plays a ringtone on the speaker attached to the Pi whenever it receives a 'Ring'-request. PiBell-Pi is cross-compiled on a linux x86_64 machine. As of now there is no *make* file for a native compilation on the Raspberry Pi itself.
 
-# Dependencies, Prerequisites and Installation
+### Dependencies, Prerequisites and Installation
 PiBell-Pi expects a linux environment on the Pi, for instance, [Noobs][1] or [Raspbian][1]. Additionally, the following dependencies are required to run/compile PiBell sucessfully:
 + [libcurl][4] - easy access of REST web services
 + libc6 - standard c99 libraries (stdio, stdlib, stdbool, string, math, unistd)
 
-## Installation
+#### Installation
+This section explains how to install PiBell-Pi on your Pi by copying over the executable and all required resource files.
 
-### Setup
-1) Make sure you have a linux system on your Pi and your Pi has internet access.
-2) If you're not locally working on your Pi, login to via ssh.
-3) Open a terminal
+##### Setup
+1) Checkout PiBell to your local system (your desktop):\
+`cd ~`\
+`git clone https://github.com/mdrobek/PiBell.git`
+2) Make sure you have a linux system on your Pi and your Pi has internet access.
+3) If you're not locally working on your Pi, login via ssh.
+4) Open a terminal
 
-### Prepare the environment and run it
-1) Install libc6 and libcurl:
+##### Prepare the environment and run it
+1) Install libc6 and libcurl:\
 `sudo apt-get install libc6 libcurl4-openssl-dev`
-2) Create and change to a new folder:
-`mkdir ~/PiBell`
+2) Create and change to a new folder:\
+`mkdir ~/PiBell`\
 `cd ~/PiBell`
-3) Copy the executable PiBell-Pi/bin/PiBell-arm to the folder ~/PiBell, e.g., via ssh from your Desktop or from a USB stick.
-4) Run it
+3) Copy the executable PiBell-Pi/bin/PiBell-arm from your local git copy to the folder ~/PiBell on your Pi, e.g., by using the deploy script\
+`~/PiBell/PiBell-Pi/build/deploy/deploy.sh`\
+**NOTE**: You will need to adjust some parameters in the deploy script, e.g., your Pi hostname and username
+4) Run it\
 `./PiBell-arm`
 
 
-# Compiling PiBell-Pi
-This section describes how to build the PiBell-Pi project to create the executable. The build system being used in this case is [cmake][2], since it helps us setting up the build environment as needed. PiBell-Pi itself is supposed to be run on the Pi (ARM arch), but for debugging reasons it comes handy to run it on your local desktop system (x86 arch) as well.
+### Compiling PiBell-Pi
+This section describes how to build the PiBell-Pi project to create the executable. The build system being used in this case is [cmake][2], since it helps us setting up the build environment as needed. PiBell-Pi itself is supposed to be run on the Pi (ARM arch), but for debugging reasons it comes handy to run it on your local desktop system (x86 arch) as well. As mentioned earlier, we are cross-compiling PiBell-Pi on a linux x86_64 machine. There is currently no *make* file to compile it natively on the Raspberry Pi.
 
+##### Setting up the Cross-Compiler
 TODO: Go on here
 
 
-# Acknowledgements
+### Acknowledgements
 Credits to whom credits belong:
-+ [cJSON][3] built by Dave Gamble
-+ [libcurl][4]
+* [cJSON][3] built by Dave Gamble
+* [libcurl][4]
 
 [1]: http://www.raspberrypi.org/downloads/
 [2]: http://www.cmake.org/
