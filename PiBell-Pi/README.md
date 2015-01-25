@@ -10,23 +10,23 @@ PiBell-Pi expects a linux environment on the Pi, for instance, [Noobs][1] or [Ra
 This section explains how to install PiBell-Pi on your Pi by copying over the executable and all required resource files.
 
 ##### Setup
-1) Checkout PiBell to your local system (your desktop):\
-`cd ~`\
-`git clone https://github.com/mdrobek/PiBell.git`
+1) Checkout PiBell to your local system (your desktop):  
+`cd ~`  
+`git clone https://github.com/mdrobek/PiBell.git`  
 2) Make sure you have a linux system on your Pi and your Pi has internet access.
 3) If you're not locally working on your Pi, login via ssh.
 4) Open a terminal
 
 ##### Prepare the environment and run it
-1) Install libc6 and libcurl:\
+1) Install libc6 and libcurl:  
 `sudo apt-get install libc6 libcurl4-openssl-dev`
-2) Create and change to a new folder:\
-`mkdir ~/PiBell`\
-`cd ~/PiBell`
-3) Copy the executable PiBell-Pi/bin/PiBell-arm from your local git copy to the folder ~/PiBell on your Pi, e.g., by using the deploy script\
-`~/PiBell/PiBell-Pi/build/deploy/deploy.sh`\
+2) Create and change to a new folder:  
+`mkdir ~/PiBell`  
+`cd ~/PiBell`  
+3) Copy the executable PiBell-Pi/bin/PiBell-arm from your local git copy to the folder ~/PiBell on your Pi, e.g., by using the deploy script  
+`~/PiBell/PiBell-Pi/build/deploy/deploy.sh`  
 **NOTE**: You will need to adjust some parameters in the deploy script, e.g., your Pi hostname and username
-4) Run it\
+4) Run it  
 `./PiBell-arm`
 
 
