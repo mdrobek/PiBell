@@ -1,0 +1,48 @@
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.cargo'
+
+sourceCompatibility = 1.7
+version = '1.0'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    // Cargo plugin to deploy on tomcat
+    dependencies {
+        classpath 'com.bmuschko:gradle-cargo-plugin:2.0.3'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+project.ext {
+    org_springframework_version = "4.0.2.RELEASE"
+    jersey_version = "1.18.3"
+//    jersey_spring_version = "1.18.3"
+    javatuples_version = "1.2"
+    google_gson_version = "2.2.2"
+//    javax_servlet_version = "3.0.1"
+}
+
+dependencies {
+    // Spring stuff
+    compile 'org.springframework:spring-web:' + project.ext.org_springframework_version
+    compile 'org.springframework:spring-webmvc:' + project.ext.org_springframework_version
+    // Jersey stuff
+    compile 'com.sun.jersey:jersey-bundle:' + project.ext.jersey_version
+    compile 'com.sun.jersey.contribs:jersey-spring:' + project.ext.jersey_version
+    compile 'com.sun.jersey.contribs:jersey-multipart:' + project.ext.jersey_version
+    // General stuff
+    compile 'org.javatuples:javatuples:' + project.ext.javatuples_version
+    compile 'com.google.code.gson:gson:' + project.ext.google_gson_version
+    // Tomcat deploy plugin
+    cargo 'org.codehaus.cargo:cargo-core-uberjar:1.1.1',
+            'org.codehaus.cargo:cargo-ant:1.1.1',
+            'jaxen:jaxen:1.1.1'
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
