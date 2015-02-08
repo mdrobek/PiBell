@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar PiBell-GUI.jar
+$JAVA_HOME/bin/java -Xms128m -Xmx384m -jar PiBell-GUI.jar

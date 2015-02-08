@@ -1,3 +1,4 @@
-# Vim stuff
+# General stuff
 *.swp
+*~
 **/.gradle/*
