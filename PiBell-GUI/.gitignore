@@ -1,5 +1,4 @@
 # general stuff
-bin/*
 tags
 build/deploy/README-PI.txt
 
@@ -12,4 +11,3 @@ build/deploy/README-PI.txt
 
 # Java stuff
 out/*
-ship/*

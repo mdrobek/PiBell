@@ -38,10 +38,10 @@ public class Rest {
         "https://unionwork.org";
     private static final String LOCAL_HOST_ADDRESS =
         "http://192.168.2.121:8080";
-    private static final String REST_PREFIX = "/rest/v1";
+    private static final String REST_PREFIX = "/pibell/v1";
 
     // Backend interfaces
-    private static final String CALL_URI = "/answerit/call";
+    private static final String CALL_URI = "/server/call";
 
     private final String HOST_ADDRESS;
     private final String USER_ID;

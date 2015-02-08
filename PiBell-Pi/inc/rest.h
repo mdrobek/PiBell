@@ -17,7 +17,7 @@
 // Default Tomcat port
 #define REST_LOCAL_PORT 8080
 // The static part of the URI where the PiBell backend is located
-#define REST_URI "rest/v1/answerit"
+#define REST_URI "pibell/v1/rest"
 
 // The REST URI endpoint for the ping service
 #define PING_ENDPOINT "ping"

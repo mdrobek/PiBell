@@ -5,13 +5,13 @@ PiBell is a free Client-Server Application to transform the Raspberry Pi into a 
 The PiBell project is divided into 3 separate sub modules, each with its on purpose:
 * PiBell-Pi - A plain C program monitoring the backend server for 'Ring' requests and if triggered, rings the bell. (Runs on the Pi)
 * PiBell-GUI - Java frontend GUI used to send a 'Ring' request to a PiBell. (Runs on everything that has a JVM on it, but probably Desktops though)
-* PiBell-Server - J2EE backend that receives and caches 'Ring' requests. (Runs on your server machine)
+* PiBell-Server - J2EE backend that receives and caches 'Ring' requests. (Runs on your server machine)  
 All 3 modules have to run in order to have a working PiBell.
 
 ## Hardware Requirements
-This project has the following requirements:
+You need the following hardware to run the PiBell:  
 + 1 Rapsberry Pi B+ (with USB power cord or battery pack)
 + 1 Speaker (with a 3.5mm jack audio input)
-+ 1 USB-Wifi dongle (if you want a mobile PiBell)
++ 1 USB-Wifi dongle (if you want a mobile PiBell, othwise a CAT5/6 ethernet cable to connect the Pi with your router)
 + 1 Server (with Tomcat/Jetty and Java installed)
-+ at least 1 device that sends a 'Ring' request (e.g., your Desktop machine)
++ at least 1 device that can trigger/send a 'Ring' request (e.g., your Desktop machine)
