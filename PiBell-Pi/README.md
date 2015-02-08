@@ -18,8 +18,8 @@ The following dependencies are required to run/compile PiBell sucessfully on you
 
 ##### Prepare the Pi and run PiBell
 1) PiBell requires the following dependencies on your Pi:  
-  + [libcurl][4] - easy access of REST web services  
-  + libc6 - standard c99 libraries (stdio, stdlib, stdbool, string, math, unistd)  
+  1a) [libcurl][4] - easy access of REST web services  
+  1b) libc6 - standard c99 libraries (stdio, stdlib, stdbool, string, math, unistd)  
 You can install those via:  
 `sudo apt-get install libc6 libcurl4-openssl-dev`  
 2) Create and change to a new folder:  
