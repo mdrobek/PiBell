@@ -1,4 +1,4 @@
-package ait.gui;
+package pib.gui;
 
 /**
  * Document this file!

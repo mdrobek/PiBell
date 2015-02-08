@@ -1,4 +1,4 @@
-package ait.gui;
+package pib.gui;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,17 +11,17 @@ import java.awt.event.ActionListener;
  *
  * @author MD
  */
-public class AnswerItWindow extends JFrame implements ActionListener {
+public class PiBellWindow extends JFrame implements ActionListener {
     private JButton callButton;
     private boolean isLocal = false;
     private UIListener listener;
 
-    public AnswerItWindow(UIListener aListener, boolean isLocal) {
+    public PiBellWindow(UIListener aListener, boolean isLocal) {
         this.listener = aListener;
         this.isLocal = isLocal;
         super.setSize(300, 100);
         super.setLocationRelativeTo(null);
-        String title = "Anklingeln";
+        String title = "PiBell-GUI";
         if (this.isLocal) title += " - LOCAL VERSION";
         super.setTitle(title);
         super.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -29,7 +29,7 @@ public class AnswerItWindow extends JFrame implements ActionListener {
     }
 
     private void addLayout() {
-        this.callButton = new JButton("Eltern anrufen");
+        this.callButton = new JButton("Call somebody");
         this.callButton.setSize(150, 50);
         this.callButton.addActionListener(this);
 
