@@ -101,19 +101,22 @@ static bool isARMPlattform_() {
 static struct Config * readConfigFile_(Ctrler *ctrler, char *configFileName) {
     struct Config *mainConf = malloc(sizeof(struct Config));
     mainConf->restConf = NULL;
+    mainConf->username = NULL;
+    mainConf->verbose = false;
     char *filePath = malloc(strlen(ctrler->resourceFolder)
             + strlen(configFileName) + 2);
-    printf("Building path to template file: %s | %s\n", ctrler->resourceFolder,
-            configFileName);
     sprintf(filePath, "%s/%s", ctrler->resourceFolder, configFileName);
-    printf("File path is: %s\n", filePath);
     if (ini_parse(filePath, configFileReader_Callback_, mainConf) < 0) {
-        printf("Can't load config file '%s'\n", filePath);
+        fprintf(stderr, "[ERROR]: Can't load config file '%s'\n", filePath);
+        exit(-1);
     }
-    printf("Config loaded successfully from file '%s': %s | %d | %s | %s | %s | %s\n",
-            filePath, mainConf->username, mainConf->verbose,
-            mainConf->restConf->protocol, mainConf->restConf->hostname,
-            mainConf->restConf->port, mainConf->restConf->deploymentLocation);
+    if (mainConf->verbose) {
+        printf("Config loaded successfully from file '%s'\n: \t%s\n | \t%d\n | "
+                "\t%s\n | \t%s\n | \t%s\n | \t%s\n",
+                filePath, mainConf->username, mainConf->verbose,
+                mainConf->restConf->protocol, mainConf->restConf->hostname,
+                mainConf->restConf->port, mainConf->restConf->deploymentLocation);
+    }
     return mainConf;
 }
 
@@ -124,7 +127,7 @@ static int configFileReader_Callback_(void *conf, const char *section, const cha
         mainConf->restConf = malloc(sizeof(struct RestConfig));
     }
     
-    printf("In callback function: %s | %s | %s\n", section, name, value);
+    /*printf("In callback function: %s | %s | %s\n", section, name, value);*/
 
     if (MATCH("Login", "piUsername")) {
         mainConf->username = strdup(value);
@@ -132,7 +135,11 @@ static int configFileReader_Callback_(void *conf, const char *section, const cha
         mainConf->verbose = GETBOOL(value);
     // RestConfig part
     } else if (MATCH("Server", "hostname")) {
-        strcpy(mainConf->restConf->hostname, value);
+        // Check if empty (this means we're using localhost)
+        char *curHostname = (0 == strlen(value)) ?
+            strdup(REST_LOCAL_ADDRESS) :
+            strdup(value);
+        strcpy(mainConf->restConf->hostname, curHostname);
     } else if (MATCH("Server", "port")) {
         strcpy(mainConf->restConf->port, value);
     } else if (MATCH("Server", "deployedAt")) {
@@ -151,6 +158,6 @@ static char * getResourceFolder(Ctrler *ctrler) {
     char *resourcePath = malloc(strlen(ctrler->execDirName)
             + strlen(RESOURCE_FOLDER) + 5);
     sprintf(resourcePath, "%s/../%s", ctrler->execDirName, RESOURCE_FOLDER);
-    printf("Resource path is: %s\n", resourcePath);
+    /*printf("Resource path is: %s\n", resourcePath);*/
     return resourcePath;
 }

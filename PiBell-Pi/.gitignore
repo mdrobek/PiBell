@@ -32,6 +32,12 @@
 tags
 build/deploy/README-PI.txt
 
+# specific config files
+res/*
+# except those files
+!res/ring.mp3
+!res/template_Config_File.ini
+
 # vim stuff
 .ycm*
 .ycm_extra_conf.py
