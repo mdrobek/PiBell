@@ -7,9 +7,9 @@ PiBell-GUI is a small prototypical java UI implementation that allows to ring th
   2a) For Windows: Open a command window via *CTRL-r -> cmd*, then type  
   `echo %JAVA_HOME%`  
   2b) For Linux: Open a terminal via *CTRL + ALT + t*, then type  
-  `echo $JAVA_HOME`
+  `echo $JAVA_HOME`  
 3) Navigate to whereever your PiBell-GUI bin folder is located, e.g., via  
-  `cd /home/your-username/PiBell/PiBell-GUI/bin`
+  `cd /home/your-username/PiBell/PiBell-GUI/bin`  
 4) You should now be able to simply start the PiBell-GUI by  
   4a) Windows: PiBell-GUI.bat  
   4b) Linux: ./PiBell-GUI.sh  

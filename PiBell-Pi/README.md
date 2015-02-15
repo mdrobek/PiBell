@@ -42,9 +42,11 @@ TODO: Go on here
 ### Acknowledgements
 Credits to whom credits belong:
 * [cJSON][3] built by Dave Gamble
+* [inih][5] developed by Brush Technology (BSD license)
 * [libcurl][4]
 
 [1]: http://www.raspberrypi.org/downloads/
 [2]: http://www.cmake.org/
 [3]: http://sourceforge.net/projects/cjson/
 [4]: http://curl.haxx.se/libcurl/
+[5]: https://code.google.com/p/inih/

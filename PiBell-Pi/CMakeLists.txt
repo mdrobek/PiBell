@@ -82,7 +82,8 @@ include_directories(${LIBCURL_INCLUDE_DIR} ${PiBell_INCLUDE_DIR} )
 set(SOURCE_FILES ${PiBell_SOURCE_DIR}/main.c
     ${PiBell_SOURCE_DIR}/ctrler.c
     ${PiBell_SOURCE_DIR}/rest.c
-    ${PiBell_SOURCE_DIR}/cJSON.c)
+    ${PiBell_SOURCE_DIR}/cJSON.c
+    ${PiBell_SOURCE_DIR}/ini.c)
 add_executable(${OUTPUT_NAME} ${SOURCE_FILES})
 target_link_libraries(${OUTPUT_NAME} ${LIBCURL_LIBRARY})
 # Link in math library for cJSON

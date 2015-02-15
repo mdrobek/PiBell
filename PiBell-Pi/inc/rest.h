@@ -16,8 +16,8 @@
 #define REST_LOCAL_ADDRESS "localhost"
 // Default Tomcat port
 #define REST_LOCAL_PORT 8080
-// The static part of the URI where the PiBell backend is located
-#define REST_URI "pibell/v1/rest"
+// The PiBell-Server REST API interface static part of the URI
+#define REST_API_URI "v1/rest"
 
 // The REST URI endpoint for the ping service
 #define PING_ENDPOINT "ping"
@@ -44,14 +44,6 @@ struct RestResponse {
 
 // Structure that contains all information for a REST request
 struct RestRequest {
-    // http | https
-    char protocol[6];
-    // name or ip address
-    char hostname[30];
-    // 80 | 8080
-    char port[7];
-    // static part of REST URI
-    char restURI[17];
     // request specific part of URI
     char endpoint[20];
     // the final compiled address
@@ -60,11 +52,24 @@ struct RestRequest {
     size_t size;
 };
 
+// Structure that contains the basic REST information (how to connect to the server)
+struct RestConfig {
+    // http | https
+    char protocol[6];
+    // name or ip address
+    char hostname[30];
+    // 80 | 8080
+    char port[7];
+    // Deployment location of the PiBell-Server web-app (e.g., pibell)
+    char deploymentLocation[50];
+};
+    
 ///////////////////////////////////////////////////////////////////////////////
 ///                               PUBLIC METHODS                            ///
 ///////////////////////////////////////////////////////////////////////////////
 // Memory management
-extern void * Rest_new(bool local, const char *recipientName, bool verbose);
+extern void * Rest_new(struct RestConfig *restConf, const char *recipientName,
+        bool verbose);
 extern void Rest_delete(void *rest);
 
 // Functionality
@@ -74,8 +79,8 @@ extern struct PingJSON * Rest_ping(void *rest);
 ///                               PRIVATE METHODS                           ///
 ///////////////////////////////////////////////////////////////////////////////
 
-static struct RestRequest * createRequest(bool local, const char *endpoint);
-
+static struct RestRequest * createRequest(struct RestConfig *conf,
+        const char *endpoint);
 static int doPingRequest(Rest *rest, struct PingJSON *ping);
 static CURLcode performRequest(char *address, const char *fields,
         struct RestResponse *result, bool verbose);

@@ -1,26 +1,35 @@
 #include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
 #include <unistd.h>
+#include <libgen.h>
 #include "../inc/ctrler.h"
 #include "../inc/rest.h"
+#include "../inc/ini.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///                               PUBLIC METHODS                            ///
 ///////////////////////////////////////////////////////////////////////////////
-extern void * Ctrler_new() {
+extern void * Ctrler_new(char *execPath, char *configFileName) {
     Ctrler *ctrler = malloc(sizeof(Ctrler));
+    ctrler->execDirName = dirname(execPath);
+    ctrler->resourceFolder = getResourceFolder(ctrler);
+    ctrler->mainConf = readConfigFile_(ctrler, configFileName);
     return ctrler; 
 }
 
 extern void Ctrler_delete(void *ctrler) {
-    if (NULL != ctrler) free(ctrler);
+    if (NULL != ctrler) {
+        Ctrler *myCtrler = (Ctrler*) ctrler;
+        free(myCtrler->mainConf);
+        free(myCtrler->mainConf);
+        free(ctrler);
+    }
 }
 
 // Functionality
-extern void Ctrler_run(void *ctrler, bool local, const char *recipientName,
-        bool verbose) {
-    Rest *rest = Rest_new(local, recipientName, verbose);
+extern void Ctrler_run(void *ctrler) {
+    Ctrler *myCtrler = (Ctrler*) ctrler;
+    Rest *rest = Rest_new(myCtrler->mainConf->restConf, myCtrler->mainConf->username,
+           myCtrler->mainConf->verbose);
     printf("new rest is: %s | %s\n", rest->pingReq->address,
             rest->recipientName);
     while(1) {
@@ -87,4 +96,61 @@ static bool isARMPlattform_() {
     bool isARM = !strcmp("arm", CMAKE_PLATTFORM);
     /*printf("plattform: %s, %d\n", CMAKE_PLATTFORM, isARM);*/
     return isARM;
+}
+
+static struct Config * readConfigFile_(Ctrler *ctrler, char *configFileName) {
+    struct Config *mainConf = malloc(sizeof(struct Config));
+    mainConf->restConf = NULL;
+    char *filePath = malloc(strlen(ctrler->resourceFolder)
+            + strlen(configFileName) + 2);
+    printf("Building path to template file: %s | %s\n", ctrler->resourceFolder,
+            configFileName);
+    sprintf(filePath, "%s/%s", ctrler->resourceFolder, configFileName);
+    printf("File path is: %s\n", filePath);
+    if (ini_parse(filePath, configFileReader_Callback_, mainConf) < 0) {
+        printf("Can't load config file '%s'\n", filePath);
+    }
+    printf("Config loaded successfully from file '%s': %s | %d | %s | %s | %s | %s\n",
+            filePath, mainConf->username, mainConf->verbose,
+            mainConf->restConf->protocol, mainConf->restConf->hostname,
+            mainConf->restConf->port, mainConf->restConf->deploymentLocation);
+    return mainConf;
+}
+
+static int configFileReader_Callback_(void *conf, const char *section, const char *name,
+        const char *value) {
+    struct Config *mainConf = (struct Config*) conf;
+    if (NULL == mainConf->restConf) {
+        mainConf->restConf = malloc(sizeof(struct RestConfig));
+    }
+    
+    printf("In callback function: %s | %s | %s\n", section, name, value);
+
+    if (MATCH("Login", "piUsername")) {
+        mainConf->username = strdup(value);
+    } else if (MATCH("Debug", "verbose")) {
+        mainConf->verbose = GETBOOL(value);
+    // RestConfig part
+    } else if (MATCH("Server", "hostname")) {
+        strcpy(mainConf->restConf->hostname, value);
+    } else if (MATCH("Server", "port")) {
+        strcpy(mainConf->restConf->port, value);
+    } else if (MATCH("Server", "deployedAt")) {
+        strcpy(mainConf->restConf->deploymentLocation, value);
+    } else if (MATCH("Server", "useSSL")) {
+        char *protocol = GETBOOL(value) ? HTTPS : HTTP;
+        strcpy(mainConf->restConf->protocol, protocol);
+    // unknown section/name, error
+    } else {
+        return -1;
+    }
+    return 1;
+}
+
+static char * getResourceFolder(Ctrler *ctrler) {
+    char *resourcePath = malloc(strlen(ctrler->execDirName)
+            + strlen(RESOURCE_FOLDER) + 5);
+    sprintf(resourcePath, "%s/../%s", ctrler->execDirName, RESOURCE_FOLDER);
+    printf("Resource path is: %s\n", resourcePath);
+    return resourcePath;
 }

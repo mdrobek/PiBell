@@ -7,11 +7,11 @@
 #include "../inc/cJSON.h"
 
 // Memory management
-void * Rest_new(bool local, const char *recipientName, bool verbose) {
+void * Rest_new(struct RestConfig *restConf, const char *recipientName, bool verbose) {
     Rest *rest = malloc(sizeof(Rest));
     rest->verbose = verbose;
     rest->recipientName = strdup(recipientName);
-    rest->pingReq = createRequest(local, PING_ENDPOINT);
+    rest->pingReq = createRequest(restConf, PING_ENDPOINT);
 	return rest;
 };
 
@@ -47,30 +47,20 @@ struct PingJSON * Rest_ping(void *rest) {
 ///////////////////////////////////////////////////////////////////////////////
 ///                               PRIVATE METHODS                           ///
 ///////////////////////////////////////////////////////////////////////////////
-static struct RestRequest * createRequest(bool local, const char *endpoint) {
+static struct RestRequest * createRequest(struct RestConfig *conf, const char *endpoint) {
     struct RestRequest *req = malloc(sizeof(struct RestRequest));
-    strcpy(req->restURI, REST_URI);
     strcpy(req->endpoint, endpoint);
-    if (local) {
-        strcpy(req->protocol, HTTP);
-        strcpy(req->hostname, REST_LOCAL_ADDRESS);
-        sprintf(req->port, "%d", REST_LOCAL_PORT);
-    } else {
-        strcpy(req->protocol, HTTPS);
-        strcpy(req->hostname, REST_REMOTE_ADDRESS);
-        sprintf(req->port, "%d", REST_REMOTE_PORT);
-    }
-    // The length is equal to all subparts of the URI + 6 additional chars to
-    // separate the URI parts and port (://, :, /, /) -> this DOES NOT include
+    // The length is equal to all subparts of the URI + 7 additional chars to
+    // separate the URI parts and port (://, :, /, /, /) -> this DOES NOT include
     // \0
-    req->size = strlen(req->protocol) + strlen(req->hostname)
-        + strlen(req->port) + strlen(req->restURI) + strlen(req->endpoint)
-        + 6;
+    req->size = strlen(conf->protocol) + strlen(conf->hostname)
+        + strlen(conf->port) + strlen(conf->deploymentLocation) + strlen(REST_API_URI)
+        + strlen(req->endpoint) + 7;
     req->address = malloc(sizeof(char)*(req->size+1));
-    sprintf(req->address, "%s://%s:%s/%s/%s", req->protocol, req->hostname,
-            req->port, req->restURI, req->endpoint);
-    /*printf("#### starting allocating: %s | %zu %zu\n", req->address,*/
-            /*strlen(req->port), req->size);*/
+    sprintf(req->address, "%s://%s:%s/%s/%s/%s", conf->protocol, conf->hostname,
+            conf->port, conf->deploymentLocation, REST_API_URI, req->endpoint);
+    printf("#### starting allocating: %s | %zu %zu\n", req->address,
+            strlen(req->endpoint), req->size);
     return req;
 }
 
