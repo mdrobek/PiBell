@@ -25,6 +25,7 @@ project.ext {
 //    jersey_spring_version = "1.18.3"
     javatuples_version = "1.2"
     google_gson_version = "2.2.2"
+    cargoVersion = '1.4.5'
 //    javax_servlet_version = "3.0.1"
 }
 
@@ -40,9 +41,25 @@ dependencies {
     compile 'org.javatuples:javatuples:' + project.ext.javatuples_version
     compile 'com.google.code.gson:gson:' + project.ext.google_gson_version
     // Tomcat deploy plugin
-    cargo 'org.codehaus.cargo:cargo-core-uberjar:1.1.1',
-            'org.codehaus.cargo:cargo-ant:1.1.1',
-            'jaxen:jaxen:1.1.1'
+    cargo "org.codehaus.cargo:cargo-core-uberjar:$cargoVersion",
+            "org.codehaus.cargo:cargo-ant:$cargoVersion"
+//    cargo 'org.codehaus.cargo:cargo-core-uberjar:2.1.1',
+//            'org.codehaus.cargo:cargo-ant:1.1.1',
+//            'jaxen:jaxen:1.1.1'
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+cargo {
+    containerId = 'tomcat7x'
+    port = 8080
+
+    deployable {
+        context = '/pibell'
+    }
+}
+
+task deploy(group: "PiBell") {
+    dependsOn(":assemble")
+    dependsOn(":cargoRedeployRemote")
 }

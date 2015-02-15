@@ -34,10 +34,17 @@ struct PingJSON * Rest_ping(void *rest) {
     struct PingJSON *ping = malloc(sizeof(struct PingJSON));
     ping->isCalling = false;
     ping->caller = NULL;
-    if (0 == doPingRequest(rest, ping)) {
+    int pingResult = doPingRequest(rest, ping);
+    if (0 == pingResult) {
         /*printf("## Ping request was successfull\n");*/
-    } else {
-        printf("Backend returned a json error for request: %s\n",
+    } else if (pingResult < 0) {
+        // This is one of our own errors 
+        if (-1 == pingResult)
+            printf("[ERROR]: Request didn't return expected JSON information. "
+                   "This is most likely, since there is a FORWARD defined on the given "
+                   "server address.\n");
+        else if (-10 == pingResult)
+            printf("[ERROR]: Backend returned a json error for request: %s\n",
                 rest_->pingReq->address);
     }
 	return ping;
@@ -59,8 +66,8 @@ static struct RestRequest * createRequest(struct RestConfig *conf, const char *e
     req->address = malloc(sizeof(char)*(req->size+1));
     sprintf(req->address, "%s://%s:%s/%s/%s/%s", conf->protocol, conf->hostname,
             conf->port, conf->deploymentLocation, REST_API_URI, req->endpoint);
-    printf("#### starting allocating: %s | %zu %zu\n", req->address,
-            strlen(req->endpoint), req->size);
+    /*printf("#### starting allocating: %s | %zu %zu\n", req->address,*/
+            /*strlen(req->endpoint), req->size);*/
     return req;
 }
 
@@ -74,24 +81,41 @@ static int doPingRequest(Rest *rest, struct PingJSON *ping) {
     CURLcode res = performRequest(rest->pingReq->address, fields, result,
            rest->verbose);
     
-    /* Check for errors */ 
-    if(res != CURLE_OK) {
-        fprintf(stderr,
-                "curl_easy_perform() failed: %s, while trying to connect to: %s\n",
-                curl_easy_strerror(res), rest->pingReq->address);
-    } else {
-        // 1) Check for JSON error code from backend
-        if (isJSONError(result->json)) res = -10;
-        else {
-            // 2) No backend error code, proceed extracting JSON information
-            ping->isCalling = cJSON_GetObjectItem(result->json,
-                "isCalling")->valueint;
-            ping->caller = strdup(cJSON_GetObjectItem(result->json, "caller")
-                ->valuestring);
-        }
-        // Clean up the Response struct content
-        free(result->jsonString);
-        cJSON_Delete(result->json); 
+    /* Check for curl errors */
+    switch (res) {
+        case CURLE_HTTP_RETURNED_ERROR:
+            // If the backend returns a >400 error (e.g., nothing is deployed at the
+            // given location)
+            fprintf(stderr,
+                "Curl request to backend was successful, but the backend returned a "
+                ">400 error.\nThis is most likely since the PiBell-Server API is not "
+                "listening at the defined server address.\n");
+            break;
+        case CURLE_OK:
+            // Request was OK, but could also only be a forward for a wrong address
+            /*printf("#### result json is: %s\n", result->jsonString);*/
+            if (NULL == result->jsonString || 0 == strlen(result->jsonString)) {
+                res = -1;
+            } else {
+                // 1) Check for JSON error code from backend
+                if (isJSONError(result->json)) res = -10;
+                else {
+                    // 2) No backend error code, proceed extracting JSON information
+                    ping->isCalling = cJSON_GetObjectItem(result->json,
+                            "isCalling")->valueint;
+                    ping->caller = strdup(cJSON_GetObjectItem(result->json, "caller")
+                            ->valuestring);
+                }
+                // Clean up the Response struct content
+                free(result->jsonString);
+                cJSON_Delete(result->json);
+            }
+            break;
+        default:
+            // All default errors
+            fprintf(stderr,
+                    "curl_easy_perform() failed: %s, while trying to connect to: %s\n",
+                    curl_easy_strerror(res), rest->pingReq->address);
     }
     free(result);
     return res;
@@ -113,6 +137,8 @@ static CURLcode performRequest(char* address, const char *fields,
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, result);
         /* get verbose debug output please */ 
         curl_easy_setopt(curl, CURLOPT_VERBOSE, verbose);
+        /* get verbose debug output please */ 
+        curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
         if (0 == strncmp(address, HTTPS, strlen(HTTPS)))
             addSSLOptions(curl);
         if (NULL != fields && strcmp("", fields))
