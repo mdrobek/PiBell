@@ -21,37 +21,54 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Document this file!
- * Creation date: 30/12/14
+ * This class encapsulates all REST specific methods used to talk to the PiBell-Server, e.g. to
+ * register a new Call request to a PiBell-Pi device. It can be used in local mode which means
+ * the PiBell-Server is expected to run in the local intranet (for testing), or in remote mode that
+ * expects the PiBell-Server on a static
  *
- * @author MD
+ * @author mdrobek
+ * @version 0.1
+ * @since 30/12/14
  */
 public class Rest {
 
-    // Default addresses
+    // Default server address (TODO: move into external config file)
     private static final String REMOTE_HOST_ADDRESS =
         "https://unionwork.org";
+    // Localhost server for testing purposes
     private static final String LOCAL_HOST_ADDRESS =
         "http://192.168.2.121:8080";
+    // The deployment prefix to access the REST API
     private static final String REST_PREFIX = "/pibell/v1";
-
-    // Backend interfaces
+    // Backend REST interfaces
     private static final String CALL_URI = "/server/call";
-
-    private final String HOST_ADDRESS;
-    private final String USER_ID;
-
+    // Connection factory to initiate SSL calls
     private SSLConnectionSocketFactory sslsf;
 
+    // The compiled REST API address
+    private final String HOST_ADDRESS;
+    // The local PiBell-GUI user ID name
+    private final String USER_ID;
+
+    /**
+     * Creates a new REST object with the given 'userID' name which is either set in local or remote
+     * mode.
+     * @param aUserID The local PiBell-GUI name to carry out call requests.
+     * @param local True - The Rest object will be initialised with local server settings that
+     *              expect the PiBell-Server to be running in the intranet.
+     *              False - All requests will be sent to a remotely running PiBell-Server.
+     */
     public Rest(String aUserID, boolean local) {
+        // 1) Check for local or remote mode and initialise the HOST address respectively
         if (local) HOST_ADDRESS = LOCAL_HOST_ADDRESS + REST_PREFIX;
         else HOST_ADDRESS = REMOTE_HOST_ADDRESS + REST_PREFIX;
         USER_ID = aUserID;
 
+        // 2) Initialise a SecurityContext to enable SSL calls
         SSLContext ctx;
         try {
             // FIXME: Initialise a TrustManager, that accepts everything
-            // -> programmatically import the certificate to the java keystore
+            // -> programatically import the certificate to the java keystore
             // see:
             // http://stackoverflow.com/questions/6755180/java-ssl-connect-add-server-cert-to-keystore-programatically
             ctx = SSLContext.getInstance("TLS");
@@ -67,22 +84,30 @@ public class Rest {
     }
 
     /**
+     * Carries out a call request to the PiBell-Server with the given recipients name (PiBell-Pi
+     * name).
      * @param recipient Name of recipient to be called.
      */
     public void performCallRequest(String recipient) throws IOException {
+        // 1) Create an SSL HttpClient
         CloseableHttpClient httpClient = HttpClients.custom()
             .setSSLSocketFactory(this.sslsf)
             .build();
+        // 2) Create the call POST request
         HttpPost callReq = createCallRequest(this.USER_ID, recipient);
+        // 3) Carry out the call request
         HttpResponse response = httpClient.execute(callReq);
-
         HttpEntity resEntity = response.getEntity();
         final String response_str = EntityUtils.toString(resEntity);
 //        System.out.println("Response is: " + response_str);
     }
 
     /**
-     * The created request is a SECURED request.
+     * Creates a new HTTPPost request with the given userID (local PiBell-GUI name) and the given
+     * recipients name (PiBell-Pi name) as the requests form parameters.
+     * @param userID The local user name (PiBell-GUI name) that is used to indicate the origin of
+     *               the registered call.
+     * @param recipient The name of the recipient for the registered call (PiBell-Pi name).
      */
     private HttpPost createCallRequest(String userID, String recipient) {
         // Create data (payload)
@@ -90,10 +115,11 @@ public class Rest {
         reqParams.add(new BasicNameValuePair("caller", userID));
         reqParams.add(new BasicNameValuePair("rec", recipient));
         try {
-            // Create authorisation
+            // Create the form parameter objects for the Call POST request
             UrlEncodedFormEntity reqEntity = new UrlEncodedFormEntity(reqParams);
-            // Add stuff to post request
+            // Create the post request for the given HOST address and the REST API location
             HttpPost post = new HttpPost(HOST_ADDRESS + CALL_URI);
+            // Add the form parameters to the POST request
             post.setEntity(reqEntity);
             return post;
         } catch (IOException e) {
@@ -102,7 +128,10 @@ public class Rest {
         return null;
     }
 
-
+    /**
+     * A simple and empty TrustManager implementation. This is not secure and shouldn't be used
+     * in a productive environment, since it merely accepts every certificate.
+     */
     private static class DefaultTrustManager implements X509TrustManager {
         @Override
         public void checkClientTrusted(X509Certificate[] arg0, String arg1) {}
