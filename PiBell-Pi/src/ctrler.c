@@ -41,7 +41,7 @@ extern void Ctrler_run(void *ctrler) {
             printf("Someone is calling: %d | %s\n", ping->isCalling,
                    ping->caller); 
             // b) Ring the bell
-            ring_(RINGTONE_FILENAME, 0);
+            ring_(getResourceFolder(ctrler), RINGTONE_FILENAME, 0);
         } else {
             // TODO: Do some logging or so
         }
@@ -60,24 +60,16 @@ extern void Ctrler_run(void *ctrler) {
 ///////////////////////////////////////////////////////////////////////////////
 ///                               PRIVATE METHODS                           ///
 ///////////////////////////////////////////////////////////////////////////////
-/**
- * @param vol The volume is in between [-6000, 0], with 0 being the loudest and
- *            -6000 being very quiet
- */
-static void ring_(char *ringtoneName, int vol) {
+static void ring_(char *resourceFolder, char *ringtoneName, int vol) {
     if (NULL == ringtoneName || !strcmp("", ringtoneName)) {
         fprintf(stderr, "No ringtone has been provided: %s\n", ringtoneName);
     }
     char omxCmd[100];
     if (vol > 0) {
-        // length of strings + 3 blanks + \0 sequence
-        /*int cmdLength = strlen(OMXPLAYER) + strlen(OMX_VOL) +...*/
-            /*+ strlen(RINGTONE_FOLDER) + strlen(ringtoneName) + 4;*/
-        /*omxCmd = (char*) malloc(sizeof(char)*cmdLength);*/
         sprintf(omxCmd, "%s %s %d %s%s", OMXPLAYER, OMX_VOL, vol,
-                RINGTONE_FOLDER, ringtoneName);
+                resourceFolder, ringtoneName);
     } else {
-        sprintf(omxCmd, "%s %s%s", OMXPLAYER, RINGTONE_FOLDER, ringtoneName);
+        sprintf(omxCmd, "%s %s%s", OMXPLAYER, resourceFolder, ringtoneName);
     }
     printf("#### Ringing the bell with command: %s\n", omxCmd);
     // b) Check if we're on the PI, and if so, ring the bell, otherwise do
@@ -106,7 +98,7 @@ static struct Config * readConfigFile_(Ctrler *ctrler, char *configFileName) {
     char *filePath = malloc(strlen(ctrler->resourceFolder)
             + strlen(configFileName) + 2);
     sprintf(filePath, "%s/%s", ctrler->resourceFolder, configFileName);
-    if (ini_parse(filePath, configFileReader_Callback_, mainConf) < 0) {
+    if (ini_parse(filePath, configFileReader_Cb_, mainConf) < 0) {
         fprintf(stderr, "[ERROR]: Can't load config file '%s'\n", filePath);
         exit(-1);
     }
@@ -120,8 +112,8 @@ static struct Config * readConfigFile_(Ctrler *ctrler, char *configFileName) {
     return mainConf;
 }
 
-static int configFileReader_Callback_(void *conf, const char *section, const char *name,
-        const char *value) {
+static int configFileReader_Cb_(void *conf, const char *section,
+        const char *name, const char *value) {
     struct Config *mainConf = (struct Config*) conf;
     if (NULL == mainConf->restConf) {
         mainConf->restConf = malloc(sizeof(struct RestConfig));

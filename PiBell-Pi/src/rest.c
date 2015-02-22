@@ -6,12 +6,15 @@
 #include "../inc/rest.h"
 #include "../inc/cJSON.h"
 
-// Memory management
-void * Rest_new(struct RestConfig *restConf, const char *recipientName, bool verbose) {
+///////////////////////////////////////////////////////////////////////////////
+///                               PUBLIC METHODS                            ///
+///////////////////////////////////////////////////////////////////////////////
+void * Rest_new(struct RestConfig *restConf, const char *recipientName,
+        bool verbose) {
     Rest *rest = malloc(sizeof(Rest));
     rest->verbose = verbose;
     rest->recipientName = strdup(recipientName);
-    rest->pingReq = createRequest(restConf, PING_ENDPOINT);
+    rest->pingReq = createRequest_(restConf, PING_ENDPOINT);
 	return rest;
 };
 
@@ -25,24 +28,20 @@ void Rest_delete(void *rest) {
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///                               PUBLIC METHODS                            ///
-///////////////////////////////////////////////////////////////////////////////
-// Functionality
 struct PingJSON * Rest_ping(void *rest) {
     Rest *rest_ = (Rest*) rest;
     struct PingJSON *ping = malloc(sizeof(struct PingJSON));
     ping->isCalling = false;
     ping->caller = NULL;
-    int pingResult = doPingRequest(rest, ping);
+    int pingResult = doPingRequest_(rest, ping);
     if (0 == pingResult) {
         /*printf("## Ping request was successfull\n");*/
     } else if (pingResult < 0) {
         // This is one of our own errors 
         if (-1 == pingResult)
             printf("[ERROR]: Request didn't return expected JSON information. "
-                   "This is most likely, since there is a FORWARD defined on the given "
-                   "server address.\n");
+                   "This is most likely, since there is a FORWARD defined on "
+                   "the given server address.\n");
         else if (-10 == pingResult)
             printf("[ERROR]: Backend returned a json error for request: %s\n",
                 rest_->pingReq->address);
@@ -50,19 +49,19 @@ struct PingJSON * Rest_ping(void *rest) {
 	return ping;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 ///                               PRIVATE METHODS                           ///
 ///////////////////////////////////////////////////////////////////////////////
-static struct RestRequest * createRequest(struct RestConfig *conf, const char *endpoint) {
+static struct RestRequest * createRequest_(struct RestConfig *conf,
+        const char *endpoint) {
     struct RestRequest *req = malloc(sizeof(struct RestRequest));
     strcpy(req->endpoint, endpoint);
     // The length is equal to all subparts of the URI + 7 additional chars to
     // separate the URI parts and port (://, :, /, /, /) -> this DOES NOT include
     // \0
     req->size = strlen(conf->protocol) + strlen(conf->hostname)
-        + strlen(conf->port) + strlen(conf->deploymentLocation) + strlen(REST_API_URI)
-        + strlen(req->endpoint) + 7;
+        + strlen(conf->port) + strlen(conf->deploymentLocation)
+        + strlen(REST_API_URI) + strlen(req->endpoint) + 7;
     req->address = malloc(sizeof(char)*(req->size+1));
     sprintf(req->address, "%s://%s:%s/%s/%s/%s", conf->protocol, conf->hostname,
             conf->port, conf->deploymentLocation, REST_API_URI, req->endpoint);
@@ -71,14 +70,14 @@ static struct RestRequest * createRequest(struct RestConfig *conf, const char *e
     return req;
 }
 
-static int doPingRequest(Rest *rest, struct PingJSON *ping) {
+static int doPingRequest_(Rest *rest, struct PingJSON *ping) {
     char fields[20];
     sprintf(fields, "%s=%s", PING_PARAM_UID, rest->recipientName);
     struct RestResponse *result = malloc(sizeof(struct RestResponse));
     result->jsonString = "";
     result->json = NULL;
 
-    CURLcode res = performRequest(rest->pingReq->address, fields, result,
+    CURLcode res = performRequest_(rest->pingReq->address, fields, result,
            rest->verbose);
     
     /* Check for curl errors */
@@ -87,9 +86,10 @@ static int doPingRequest(Rest *rest, struct PingJSON *ping) {
             // If the backend returns a >400 error (e.g., nothing is deployed at the
             // given location)
             fprintf(stderr,
-                "Curl request to backend was successful, but the backend returned a "
-                ">400 error.\nThis is most likely since the PiBell-Server API is not "
-                "listening at the defined server address.\n");
+                "Curl request to backend was successful, but the backend "
+                "returned a >400 error.\nThis is most likely since the "
+                "PiBell-Server API is not listening at the defined server "
+                "address.\n");
             break;
         case CURLE_OK:
             // Request was OK, but could also only be a forward for a wrong address
@@ -98,7 +98,7 @@ static int doPingRequest(Rest *rest, struct PingJSON *ping) {
                 res = -1;
             } else {
                 // 1) Check for JSON error code from backend
-                if (isJSONError(result->json)) res = -10;
+                if (isJSONError_(result->json)) res = -10;
                 else {
                     // 2) No backend error code, proceed extracting JSON information
                     ping->isCalling = cJSON_GetObjectItem(result->json,
@@ -121,9 +121,8 @@ static int doPingRequest(Rest *rest, struct PingJSON *ping) {
     return res;
 }
 
-static CURLcode performRequest(char* address, const char *fields,
-        struct RestResponse *result, bool verbose)
-{
+static CURLcode performRequest_(char* address, const char *fields,
+        struct RestResponse *result, bool verbose) {
     CURL *curl = NULL;
     CURLcode res = -1;
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -132,7 +131,7 @@ static CURLcode performRequest(char* address, const char *fields,
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, address);
         /* we want to use our own read function */ 
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, pingCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ping_Cb_);
         /* pointer to pass to our read function */ 
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, result);
         /* get verbose debug output please */ 
@@ -140,9 +139,9 @@ static CURLcode performRequest(char* address, const char *fields,
         /* get verbose debug output please */ 
         curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
         if (0 == strncmp(address, HTTPS, strlen(HTTPS)))
-            addSSLOptions(curl);
+            addSSLOptions_(curl);
         if (NULL != fields && strcmp("", fields))
-            addPOSTFields(curl, fields);
+            addPOSTFields_(curl, fields);
         /* Perform the request, res will get the return code */ 
         res = curl_easy_perform(curl);
         /* always cleanup */ 
@@ -153,7 +152,7 @@ static CURLcode performRequest(char* address, const char *fields,
     return res;
 }
 
-static void addSSLOptions(CURL *curl) {
+static void addSSLOptions_(CURL *curl) {
 #ifdef SKIP_PEER_VERIFICATION
     /*
      * If you want to connect to a site who isn't using a certificate that is
@@ -170,7 +169,7 @@ static void addSSLOptions(CURL *curl) {
 
 #ifdef SKIP_HOSTNAME_VERIFICATION
     /*
-     * If the site you're connecting to uses a different host name that what
+     * If the site you're connecting to uses a different host name than what
      * they have mentioned in their server certificate's commonName (or
      * subjectAltName) fields, libcurl will refuse to connect. You can skip
      * this check, but this will make the connection less secure.
@@ -179,19 +178,14 @@ static void addSSLOptions(CURL *curl) {
 #endif
 }
 
-/**
- * 
- * @param curl
- * @param fields
- */
-static void addPOSTFields(CURL *curl, const char *fields) {
+static void addPOSTFields_(CURL *curl, const char *fields) {
     /* Now specify we want to POST data */ 
     curl_easy_setopt(curl, CURLOPT_POST, 1L);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, fields);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(fields));
 }
 
-static bool isJSONError(cJSON *root) {
+static bool isJSONError_(cJSON *root) {
     if (NULL != root) {
         cJSON *errorNode = cJSON_GetObjectItem(root, "isError");
         if (errorNode) return errorNode->valueint;
@@ -199,9 +193,7 @@ static bool isJSONError(cJSON *root) {
     return false;
 }
 
-
-static size_t pingCallback(void *ptr, size_t size, size_t nmemb, void *userp)
-{
+static size_t ping_Cb_(void *ptr, size_t size, size_t nmemb, void *userp) {
     if(size*nmemb < 1) return 0;
 
     /*printf("json return: %s\n", ptr);*/
