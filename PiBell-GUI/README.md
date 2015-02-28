@@ -21,8 +21,8 @@ PiBell-GUI is a [gradle][1] project, which simplifies the build process tremendo
 1) Cd into the PiBell-GUI directory:  
   `cd /home/your-username/PiBell/PiBell-GUI`  
 2) Tell gradle to assemble a full 'fat' jar file that contains everything necessary to run the PiBell-GUI:  
-  `gradle fatJar`
-3) Gradle then builds the fat jar and copies it into the bin folder located in the PiBell-GUI directory. That's it.
+  `gradle fatJar`  
+3) Gradle then builds the fat jar and copies it into the bin folder located in the PiBell-GUI directory. That's it.  
 4) Run the fatjar 'PiBell-GUI.jar' either by double click or via one of the provided script files as explained in the previous section.  
 
 A second approach of building PiBell-GUI via gradle is to actually build it as an application:  
