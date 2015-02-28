@@ -11,3 +11,7 @@ build/deploy/README-PI.txt
 
 # Java stuff
 out/*
+
+# Gradle stuff
+build/*
+.gradle/*
