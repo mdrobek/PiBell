@@ -15,5 +15,4 @@ public interface UIListener {
      * PiBell-Server.
      */
     void callTriggered();
-
 }
